@@ -1,7 +1,6 @@
 'use client';
 
 import { Call, CallRecording } from '@stream-io/video-react-sdk';
-
 import Loader from './Loader';
 import { useGetCalls } from '@/hooks/useGetCalls';
 import MeetingCard from './MeetingCard';
@@ -10,16 +9,15 @@ import { useRouter } from 'next/navigation';
 
 const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
   const router = useRouter();
-  const { endedCalls, upcomingCalls, callRecordings, isLoading } =
-    useGetCalls();
-  const [recordings, setRecordings] = useState<CallRecording[]>([]);
+  const { endedCalls, upcomingCalls, recordings, isLoading } = useGetCalls();
+  const [fetchedRecordings, setFetchedRecordings] = useState<CallRecording[]>([]);
 
   const getCalls = () => {
     switch (type) {
       case 'ended':
         return endedCalls;
       case 'recordings':
-        return recordings;
+        return fetchedRecordings;
       case 'upcoming':
         return upcomingCalls;
       default:
@@ -43,20 +41,20 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
   useEffect(() => {
     const fetchRecordings = async () => {
       const callData = await Promise.all(
-        callRecordings?.map((meeting) => meeting.queryRecordings()) ?? [],
+        recordings?.map((meeting) => meeting.queryRecordings()) ?? []
       );
 
-      const recordings = callData
+      const newRecordings = callData
         .filter((call) => call.recordings.length > 0)
         .flatMap((call) => call.recordings);
 
-      setRecordings(recordings);
+      setFetchedRecordings(newRecordings);
     };
 
     if (type === 'recordings') {
       fetchRecordings();
     }
-  }, [type, callRecordings]);
+  }, [type, recordings]);
 
   if (isLoading) return <Loader />;
 
@@ -68,7 +66,7 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
       {calls && calls.length > 0 ? (
         calls.map((meeting: Call | CallRecording) => (
           <MeetingCard
-            key={(meeting as Call).id}
+            key={(meeting as Call).id || (meeting as CallRecording).filename}
             icon={
               type === 'ended'
                 ? '/icons/previous.svg'
