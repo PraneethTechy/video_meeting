@@ -74,6 +74,8 @@ const MeetingCard = ({
                   navigator.clipboard.writeText(link);
                   toast({ title: "Link Copied" });
                 } catch (error) {
+                  console.error("Copy link error:", error);
+
                   toast({ title: "Failed to Copy Link", variant: "destructive" });
                 }
               }}
