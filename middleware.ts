@@ -1,24 +1,18 @@
-import { clerkMiddleware, createRouteMatcher, redirectToSignIn } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
 const protectedRoutes = createRouteMatcher([
     '/',
     '/upcoming',
-    '/previous',
+    '/prevoius',
     '/recordings',
-    '/personal-room',
-    '/meeting(.*)',
-]);
+    'personal-room',
+    '/meeting(.*)'
+])
 
 export default clerkMiddleware((auth, req) => {
-    // If the user is not signed in and trying to access a protected route, redirect them
-    if (protectedRoutes(req) && !auth().userId) {
-        return redirectToSignIn({ returnBackUrl: req.url });
-    }
+    if(protectedRoutes(req)) auth();
+}) 
 
-    // If authenticated or not accessing a protected route, continue as usual
-    return NextResponse.next();
-});
 
 export const config = {
   matcher: [
@@ -27,4 +21,4 @@ export const config = {
     // Always run for API routes
     '/(api|trpc)(.*)',
   ],
-};
+}                  
